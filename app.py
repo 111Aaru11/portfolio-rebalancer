@@ -4,7 +4,8 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-DB = "model_portfolio.db"
+import os
+DB = os.path.join(os.path.dirname(__file__), "model_portfolio.db")
 
 
 def get_db():
@@ -135,25 +136,89 @@ def save():
 
     conn = get_db()
 
-    total = conn.execute("""
-        SELECT SUM(current_value)
+    holdings = conn.execute("""
+        SELECT fund_id,fund_name,current_value
         FROM client_holdings
         WHERE client_id='C001'
-    """).fetchone()[0]
+    """).fetchall()
+
+    plan = conn.execute("SELECT * FROM model_funds").fetchall()
+
+    plan_dict = {f["fund_id"]: f for f in plan}
+
+    total = sum(h["current_value"] for h in holdings)
+
+    total_buy = 0
+    total_sell = 0
+    actions = []
+
+    for h in holdings:
+
+        fund_id = h["fund_id"]
+        name = h["fund_name"]
+        value = h["current_value"]
+
+        current_pct = (value / total) * 100
+
+        if fund_id in plan_dict:
+
+            target_pct = plan_dict[fund_id]["allocation_pct"]
+
+            drift = target_pct - current_pct
+            amount = drift / 100 * total
+
+            if amount > 0:
+                action = "BUY"
+                total_buy += amount
+            else:
+                action = "SELL"
+                total_sell += abs(amount)
+
+        else:
+            action = "REVIEW"
+            amount = value
+            target_pct = None
+
+        actions.append({
+            "fund_id": fund_id,
+            "fund_name": name,
+            "action": action,
+            "amount": abs(amount),
+            "current_pct": current_pct,
+            "target_pct": target_pct
+        })
 
     now = datetime.now()
 
-    conn.execute("""
+    cursor = conn.execute("""
         INSERT INTO rebalance_sessions
         (client_id,created_at,portfolio_value,total_to_buy,total_to_sell,net_cash_needed,status)
         VALUES (?,?,?,?,?,?,?)
-    """,("C001",now,total,200000,120000,80000,"PENDING"))
+    """,("C001",now,total,total_buy,total_sell,total_buy-total_sell,"PENDING"))
+
+    session_id = cursor.lastrowid
+
+    for a in actions:
+
+        conn.execute("""
+            INSERT INTO rebalance_items
+            (session_id,fund_id,fund_name,action,amount,current_pct,target_pct,post_rebalance_pct,is_model_fund)
+            VALUES (?,?,?,?,?,?,?,?,?)
+        """,(session_id,
+            a["fund_id"],
+            a["fund_name"],
+            a["action"],
+            a["amount"],
+            a["current_pct"],
+            a["target_pct"],
+            a["target_pct"],
+            1 if a["target_pct"] else 0
+        ))
 
     conn.commit()
     conn.close()
 
     return redirect("/history")
-
 
 # -----------------------------
 # Edit plan
