@@ -1,0 +1,33 @@
+<h2>Edit Recommended Plan</h2>
+
+<form method="POST">
+
+<table class="table">
+
+<tr>
+<th>Fund</th>
+<th>Allocation %</th>
+</tr>
+
+{% for f in funds %}
+
+<tr>
+<td>{{f.fund_name}}</td>
+
+<td>
+<input type="number"
+name="{{f.fund_id}}"
+value="{{f.allocation_pct}}">
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<button class="btn btn-primary">Save</button>
+
+</form>
+
+<a href="/">Back</a>

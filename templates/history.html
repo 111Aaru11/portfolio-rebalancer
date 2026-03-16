@@ -1,0 +1,23 @@
+<h2>Rebalance History</h2>
+
+<table class="table">
+
+<tr>
+<th>Date</th>
+<th>Portfolio Value</th>
+<th>Status</th>
+</tr>
+
+{% for s in sessions %}
+
+<tr>
+<td>{{s.created_at}}</td>
+<td>{{s.portfolio_value}}</td>
+<td>{{s.status}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<a href="/">Back</a>

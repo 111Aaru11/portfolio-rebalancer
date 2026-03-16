@@ -1,0 +1,23 @@
+<h2>Current Holdings</h2>
+
+<table class="table">
+
+<tr>
+<th>Fund</th>
+<th>Value</th>
+</tr>
+
+{% for h in data %}
+
+<tr>
+<td>{{h.fund_name}}</td>
+<td>₹ {{h.current_value}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<h3>Total Portfolio Value: ₹ {{total}}</h3>
+
+<a href="/">Back</a>

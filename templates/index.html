@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Portfolio Rebalancer</title>
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+
+<body class="container mt-5">
+
+<h2>Portfolio Comparison</h2>
+
+<table class="table table-bordered">
+
+<tr>
+<th>Fund</th>
+<th>Current %</th>
+<th>Target %</th>
+<th>Drift</th>
+<th>Action</th>
+<th>Amount</th>
+</tr>
+
+{% for f in funds %}
+
+<tr>
+<td>{{f.fund}}</td>
+<td>{{f.current_pct}}%</td>
+<td>{{f.target_pct}}</td>
+<td>{{f.drift}}</td>
+<td>{{f.action}}</td>
+<td>₹ {{f.amount}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<h4>Total BUY: ₹ {{buy}}</h4>
+<h4>Total SELL: ₹ {{sell}}</h4>
+<h4>Fresh Money Needed: ₹ {{cash}}</h4>
+
+<a href="/save" class="btn btn-success">Save Recommendation</a>
+<a href="/holdings" class="btn btn-primary">View Holdings</a>
+<a href="/history" class="btn btn-warning">History</a>
+<a href="/edit" class="btn btn-secondary">Edit Plan</a>
+
+</body>
+</html>
